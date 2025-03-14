@@ -10,4 +10,7 @@ dependencyResolutionManagement {
     }
 }
 
+// Included subprojects (in alphabetical order).
+include(":stryker-jvm-integration-api")
+
 rootProject.name = "stryker-jvm"
