@@ -26,12 +26,13 @@ package io.strykermutator.jvm.runner
 public interface MutationTestRunner {
 
     /**
-     * Instruments the original source files by inserting mutants and writing the mutated code to the respective mutated
-     * source file.
+     * Instruments the source files in the source root by inserting mutants and writing the mutated code to the target
+     * directory, preserving the directory structure and file names.
      *
-     * @param sources the source files to read and write.
+     * @param sourceRoot the root directory of the source files to read.
+     * @param target the target directory for the instrumented sources.
      */
-    public fun instrumentSources(sources: Iterable<MutatableFile>)
+    public fun instrumentSources(sourceRoot: SourceRoot, target: SourceRoot)
 
     /**
      * Plans the execution of test cases with active mutants. The resulting mutation test plan [MutationTestPlan] can
