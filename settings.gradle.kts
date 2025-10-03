@@ -12,6 +12,11 @@ dependencyResolutionManagement {
 
 // Included subprojects (in alphabetical order).
 include(":stryker-jvm-agent")
+include(":stryker-jvm-companion")
+include(":stryker-jvm-core")
 include(":stryker-jvm-integration-api")
+include(":stryker-jvm-language-api")
+include(":stryker-jvm-plugin-java")
+include(":stryker-jvm-runner")
 
 rootProject.name = "stryker-jvm"
