@@ -36,6 +36,8 @@ class JavaMutantGeneratorTest {
         //Act
         val mutants = mutantGenerator.generate(tempFile)
 
+        println(mutants)
+
         //Assert
         assertEquals(1, mutants.size);
         val mutant = mutants.first()
