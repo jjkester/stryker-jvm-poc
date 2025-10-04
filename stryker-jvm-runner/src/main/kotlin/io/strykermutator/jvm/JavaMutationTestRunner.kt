@@ -11,14 +11,14 @@ import java.io.File
 
 public class JavaMutationTestRunner {
 
-    public fun run() {
+    public fun run(sourcePath: String) {
         val generators = setOf(JavaMutantGenerator())
         val testRunner = DefaultMutationTestRunner(
             instrumenter = DefaultInstrumenter(generators),
             executionPlanner = NaiveExecutionPlanner(),
             reporter = NullReporter()
         )
-        val sourceRoot = DefaultSourceRoot(File("C:\\Users\\JelleH\\IdeaProjects\\stryker-jvm-poc\\stryker-jvm-runner\\testProjects\\helloWorld\\src\\main\\java"))
+        val sourceRoot = DefaultSourceRoot(File(sourcePath))
 
         val targetDir = File("build/stryker-mutated-sources")
         if (!targetDir.exists()) {
@@ -37,8 +37,4 @@ public class JavaMutationTestRunner {
         println("Report: $report")
     }
 
-}
-
-public fun main(args: Array<String>) {
-    JavaMutationTestRunner().run()
 }
