@@ -2,8 +2,8 @@ package io.strykermutator.jvm
 
 import io.strykermutator.jvm.core.DefaultInstrumenter
 import io.strykermutator.jvm.core.DefaultMutationTestRunner
+import io.strykermutator.jvm.core.DefaultReporter
 import io.strykermutator.jvm.core.NaiveExecutionPlanner
-import io.strykermutator.jvm.core.NullReporter
 import io.strykermutator.jvm.language.java.JavaMutantGenerator
 import io.strykermutator.jvm.runner.DefaultMutantCoverageReport
 import io.strykermutator.jvm.runner.DefaultSourceRoot
@@ -16,7 +16,7 @@ public class JavaMutationTestRunner {
         val testRunner = DefaultMutationTestRunner(
             instrumenter = DefaultInstrumenter(generators),
             executionPlanner = NaiveExecutionPlanner(),
-            reporter = NullReporter()
+            reporter = DefaultReporter()
         )
         val sourceRoot = DefaultSourceRoot(File(sourcePath))
 
