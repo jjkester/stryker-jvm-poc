@@ -1,7 +1,8 @@
 package io.strykermutator.jvm.language.java
 
-import io.strykermutator.jvm.language.MutantGenerator
-import org.junit.jupiter.api.Assertions.*
+import io.strykermutator.jvm.language.SequentialMutantIdGenerator
+import io.strykermutator.jvm.language.StringCompanionMethodRef
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -28,20 +29,26 @@ class JavaMutantGeneratorTest {
             }
         """.trimIndent()
 
-        val tempFile = File.createTempFile("HelloWorld", ".java")
-        tempFile.writeText(fileContent)
+        val sourceFile = File.createTempFile("HelloWorld", ".java")
+        val targetFile = File.createTempFile("HelloWorld", ".java")
+        sourceFile.writeText(fileContent)
 
-        val mutantGenerator = JavaMutantGenerator()
+        val mutantGenerator = JavaMutantInstrumenter(
+            StringCompanionMethodRef(
+                "io.strykermutator.jvm.companion.StrykerCompanion",
+                "mutantActive"
+            )
+        )
 
         //Act
-        val mutants = mutantGenerator.generate(tempFile)
+        val mutants = mutantGenerator.instrument(sourceFile, targetFile, SequentialMutantIdGenerator())
 
         println(mutants)
 
         //Assert
-        assertEquals(1, mutants.size);
+        assertEquals(1, mutants.size)
         val mutant = mutants.first()
-        assertEquals("BooleanLiteralMutator", mutant.name)
+        assertEquals("BooleanLiteral", mutant.name)
         assertEquals("false", mutant.replacement)
         assertEquals("0", mutant.id)
         assertEquals(3, mutant.location.start.line)
@@ -49,7 +56,24 @@ class JavaMutantGeneratorTest {
         assertEquals(3, mutant.location.endInclusive.line)
         assertEquals(15, mutant.location.endInclusive.column)
 
-        tempFile.deleteOnExit()
+        assertEquals(
+            """
+            public class HelloWorld {
+
+                public static void main(String[] args) {
+                    if (io.strykermutator.jvm.companion.StrykerCompanion.mutantActive("0") ? false : true) {
+                        System.out.println("Hello, World!");
+                    } else {
+                        System.out.println("Goodbye, World!");
+                    }
+                }
+            }
+            
+            """.trimIndent(), targetFile.readText()
+        )
+
+        sourceFile.deleteOnExit()
+        targetFile.deleteOnExit()
     }
 
 }

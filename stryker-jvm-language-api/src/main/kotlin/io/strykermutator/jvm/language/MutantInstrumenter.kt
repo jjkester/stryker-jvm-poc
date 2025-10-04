@@ -7,7 +7,7 @@ import java.io.File
  *
  * Mutant generators are responsible for analyzing a file and determining the relevant mutants for that file.
  */
-public interface MutantGenerator {
+public interface MutantInstrumenter {
 
     /**
      * Determines whether a file is supported by this mutant generator.
@@ -19,5 +19,5 @@ public interface MutantGenerator {
      *
      * Mutants must have a unique id within the scope of this file and this mutant generator.
      */
-    public fun generate(file: File): Set<Mutant>
+    public fun instrument(sourceFile: File, targetFile: File, mutantIdGenerator: MutantIdGenerator): Set<Mutant>
 }

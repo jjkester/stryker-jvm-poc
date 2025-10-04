@@ -5,5 +5,4 @@ public interface Mutant {
     public val location: ClosedRange<LocationInFile>
     public val name: String
     public val replacement: String
-    public val guardedReplacement: String
 }
