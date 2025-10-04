@@ -32,7 +32,9 @@ public class JavaTransformer(
                 is Expression -> expressionMutantPlacer.place(node, replacements.checkTypes())
             }
         }
-
+        if (!targetFile.parentFile.exists()) {
+            targetFile.parentFile.mkdirs()
+        }
         targetFile.writeText(compilationUnit.toString())
 
         return mutants.values.flatMapTo(mutableSetOf()) { it.keys }
