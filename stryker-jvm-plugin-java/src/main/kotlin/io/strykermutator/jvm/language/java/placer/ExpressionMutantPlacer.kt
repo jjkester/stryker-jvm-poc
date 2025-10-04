@@ -2,19 +2,19 @@ package io.strykermutator.jvm.language.java.placer
 
 import com.github.javaparser.ast.expr.ConditionalExpr
 import com.github.javaparser.ast.expr.Expression
-import io.strykermutator.jvm.language.CompanionMethodRef
-import io.strykermutator.jvm.language.Mutant
+import io.strykermutator.jvm.common.CompanionMethodRef
+import io.strykermutator.jvm.common.Mutant
 
-public class ExpressionMutantPlacer(companionMethodRef: CompanionMethodRef) :
-    JavaMutantPlacer<Expression>(companionMethodRef) {
+public object ExpressionMutantPlacer : JavaMutantPlacer<Expression>() {
 
     override fun place(
         node: Expression,
-        mutants: Map<Mutant, Expression>
+        mutants: Map<Mutant, Expression>,
+        companionMethodRef: CompanionMethodRef
     ) {
         val replacement = mutants.entries.fold(node.clone()) { accumulator, (mutant, replacement) ->
-            ConditionalExpr(companionMethodCall(mutant.id), replacement, accumulator)
+            ConditionalExpr(companionMethodCall(companionMethodRef, mutant.ref), replacement, accumulator)
         }
-        replaceInParent(node, replacement)
+        node.replace(replacement)
     }
 }

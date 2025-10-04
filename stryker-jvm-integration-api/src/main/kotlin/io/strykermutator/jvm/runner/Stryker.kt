@@ -23,7 +23,7 @@ package io.strykermutator.jvm.runner
  * a build tool, the integration with the build tool can be optimized. For example, a build tool can use its built-in
  * caching mechanisms and detect changes to optimize performance.
  */
-public interface MutationTestRunner {
+public interface Stryker {
 
     /**
      * Instruments the source files in the source root by inserting mutants and writing the mutated code to the target

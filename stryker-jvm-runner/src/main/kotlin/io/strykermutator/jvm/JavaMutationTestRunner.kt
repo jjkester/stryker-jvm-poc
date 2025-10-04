@@ -1,11 +1,11 @@
 package io.strykermutator.jvm
 
 import io.strykermutator.jvm.core.DefaultInstrumenter
-import io.strykermutator.jvm.core.DefaultMutationTestRunner
 import io.strykermutator.jvm.core.DefaultReporter
 import io.strykermutator.jvm.core.NaiveExecutionPlanner
-import io.strykermutator.jvm.language.StringCompanionMethodRef
-import io.strykermutator.jvm.language.java.JavaMutantInstrumenter
+import io.strykermutator.jvm.common.StringCompanionMethodRef
+import io.strykermutator.jvm.core.StrykerFactory
+import io.strykermutator.jvm.language.java.JavaLanguagePlugin
 import io.strykermutator.jvm.runner.DefaultMutantCoverageReport
 import io.strykermutator.jvm.runner.DefaultSourceRoot
 import java.io.File
@@ -13,12 +13,12 @@ import java.io.File
 public class JavaMutationTestRunner {
 
     public fun run(sourcePath: String) {
-        val generators = setOf(JavaMutantInstrumenter(StringCompanionMethodRef("io.strykermutator.jvm.companion.StrykerCompanion", "mutantActive")))
-        val testRunner = DefaultMutationTestRunner(
-            instrumenter = DefaultInstrumenter(generators),
-            executionPlanner = NaiveExecutionPlanner(),
+        val generators = setOf(JavaLanguagePlugin(StringCompanionMethodRef("io.strykermutator.jvm.companion.StrykerCompanion", "mutantActive")))
+        val testRunner = StrykerFactory {
+            instrumenter = DefaultInstrumenter(generators)
+            executionPlanner = NaiveExecutionPlanner()
             reporter = DefaultReporter()
-        )
+        }
         val sourceRoot = DefaultSourceRoot(File(sourcePath))
 
         val targetDir = File("build/stryker-mutated-sources")

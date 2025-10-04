@@ -11,8 +11,7 @@ public interface Reporter {
 
 public class DefaultReporter : Reporter {
     override fun collect(testExecutionResults: Collection<TestExecutionResult>): MutationTestReport {
-        // TODO: Fix assumption that a failed test case fails all the mutants
-        val (survived, killed) = testExecutionResults.partition { it.failedTestCases.isNotEmpty() }
-        return DefaultMutationTestReport(killed.size, survived.size)
+        // TODO: Implement actual numbers
+        return DefaultMutationTestReport(emptyMap())
     }
 }

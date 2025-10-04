@@ -1,7 +1,7 @@
 package io.strykermutator.jvm.core
 
+import io.strykermutator.jvm.common.MutantRef
 import io.strykermutator.jvm.runner.MutantCoverageReport
-import io.strykermutator.jvm.runner.MutantRef
 import io.strykermutator.jvm.runner.MutationTestPlan
 import io.strykermutator.jvm.runner.TestCaseRef
 import io.strykermutator.jvm.runner.TestExecution

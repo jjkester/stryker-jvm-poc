@@ -1,4 +1,4 @@
-package io.strykermutator.jvm.runner
+package io.strykermutator.jvm.common
 
 import java.io.File
 
@@ -20,6 +20,9 @@ public interface MutatableFile {
      * The file must point to a file location that is writable and is not a directory.
      */
     public val mutated: File
+
+    /** File extension of the mutatable file. */
+    public val extension: String
 }
 
 /**
@@ -34,6 +37,10 @@ public interface MutatableFile {
  */
 public data class DefaultMutatableFile(override val original: File, override val mutated: File) : MutatableFile {
 
+    /** File extension of the mutatable file. */
+    override val extension: String
+        get() = original.extension
+
     init {
         // The original reference must be a file and exist
         require(original.isFile) { "Original file $original is not a file" }
@@ -43,6 +50,11 @@ public data class DefaultMutatableFile(override val original: File, override val
         if (mutated.exists()) {
             require(mutated.isFile) { "Mutated file $mutated is not a file" }
             require(mutated.canWrite()) { "Mutated file $mutated is not writable" }
+        }
+
+        // The file extension of both files must be the same
+        require(original.extension == mutated.extension) {
+            "Mutated file has a different extension ${mutated.extension} to the original ${original.extension}"
         }
     }
 }

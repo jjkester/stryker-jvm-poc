@@ -1,9 +1,16 @@
 package io.strykermutator.jvm.runner
 
+import io.strykermutator.jvm.common.MutantRef
+
 /**
  * Test results for set of test cases executed against a set of active mutants in a single test run.
  */
 public interface TestExecutionResult {
+
+    /**
+     * Outcome of each test case.
+     */
+    public val testOutcomes: Map<TestCaseRef, TestOutcome>
 
     /**
      * Executed test cases.
@@ -28,33 +35,27 @@ public interface TestExecutionResult {
  * Validates that both the set of test cases and the set of active mutants are not empty, and that the set of failed
  * test cases is a subset of the set of test cases.
  *
- * @property testCases the executed test cases.
+ * @property testOutcomes the executed test cases and their outcomes.
  * @property activeMutants the enabled mutants.
  * @constructor Creates a test execution result with a set of test cases, a set of active mutants, and a set of failed
  *              test cases.
  */
 public data class DefaultTestExecutionResult(
-    override val testCases: Set<TestCaseRef>,
-    override val activeMutants: Set<MutantRef>,
-    override val failedTestCases: Set<TestCaseRef>
+    override val testOutcomes: Map<TestCaseRef, TestOutcome>,
+    override val activeMutants: Set<MutantRef>
 ) : TestExecutionResult {
 
-    init {
-        require(testCases.isNotEmpty()) { "Set of test cases is empty" }
-        require(activeMutants.isNotEmpty()) { "Set of active mutants is empty" }
-        require(testCases.containsAll(failedTestCases)) { "Set of test cases does not contain all failed test cases" }
+    override val testCases: Set<TestCaseRef>
+        get() = testOutcomes.keys
+
+    override val failedTestCases: Set<TestCaseRef> by lazy {
+        testOutcomes.mapNotNullTo(mutableSetOf()) { (testCaseRef, outcome) ->
+            testCaseRef.takeIf { outcome.isSuccessful }
+        }
     }
 
-    /**
-     * Creates a test execution result with a single test case and a single active mutant.
-     *
-     * @param testCase the executed test case.
-     * @param activeMutant the enabled mutant.
-     * @param isPassed whether the test case passed.
-     */
-    public constructor(testCase: TestCaseRef, activeMutant: MutantRef, isPassed: Boolean) : this(
-        setOf(testCase),
-        setOf(activeMutant),
-        setOfNotNull(testCase.takeIf { !isPassed }),
-    )
+    init {
+        require(testOutcomes.isNotEmpty()) { "Map of test cases and outcomes is empty" }
+        require(activeMutants.isNotEmpty()) { "Set of active mutants is empty" }
+    }
 }

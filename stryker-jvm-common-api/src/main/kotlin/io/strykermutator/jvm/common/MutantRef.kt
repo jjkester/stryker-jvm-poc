@@ -1,4 +1,4 @@
-package io.strykermutator.jvm.runner
+package io.strykermutator.jvm.common
 
 /**
  * Reference to a mutant.
@@ -8,7 +8,7 @@ public interface MutantRef {
     /**
      * Identifier of the mutant.
      */
-    public val id: Int
+    public val id: String
 }
 
 /**
@@ -17,4 +17,4 @@ public interface MutantRef {
  * @property id the identifier of the mutant.
  * @constructor Creates a reference to the mutant by its identifier.
  */
-public data class DefaultMutantRef(override val id: Int) : MutantRef
+public data class DefaultMutantRef(override val id: String) : MutantRef

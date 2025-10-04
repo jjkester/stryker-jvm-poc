@@ -1,5 +1,7 @@
 package io.strykermutator.jvm.runner
 
+import io.strykermutator.jvm.common.MutantRef
+
 /**
  * Test execution containing a set of test cases and a set of active mutants that can be combined in a single test run.
  */

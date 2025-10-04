@@ -1,7 +1,8 @@
 package io.strykermutator.jvm.language.java
 
+import io.strykermutator.jvm.common.DefaultMutatableFile
 import io.strykermutator.jvm.language.SequentialMutantIdGenerator
-import io.strykermutator.jvm.language.StringCompanionMethodRef
+import io.strykermutator.jvm.common.StringCompanionMethodRef
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -33,7 +34,7 @@ class JavaMutantGeneratorTest {
         val targetFile = File.createTempFile("HelloWorld", ".java")
         sourceFile.writeText(fileContent)
 
-        val mutantGenerator = JavaMutantInstrumenter(
+        val mutantGenerator = JavaLanguagePlugin(
             StringCompanionMethodRef(
                 "io.strykermutator.jvm.companion.StrykerCompanion",
                 "mutantActive"
@@ -41,20 +42,20 @@ class JavaMutantGeneratorTest {
         )
 
         //Act
-        val mutants = mutantGenerator.instrument(sourceFile, targetFile, SequentialMutantIdGenerator())
+        val mutants = mutantGenerator.instrument(DefaultMutatableFile(sourceFile, targetFile), SequentialMutantIdGenerator())
 
         println(mutants)
 
         //Assert
         assertEquals(1, mutants.size)
         val mutant = mutants.first()
-        assertEquals("BooleanLiteral", mutant.name)
+        assertEquals("BooleanLiteral", mutant.operator)
         assertEquals("false", mutant.replacement)
-        assertEquals("0", mutant.id)
-        assertEquals(3, mutant.location.start.line)
-        assertEquals(12, mutant.location.start.column)
-        assertEquals(3, mutant.location.endInclusive.line)
-        assertEquals(15, mutant.location.endInclusive.column)
+        assertEquals("0", mutant.ref.id)
+        assertEquals(3, mutant.location.segment.start.line)
+        assertEquals(12, mutant.location.segment.start.column)
+        assertEquals(3, mutant.location.segment.endInclusive.line)
+        assertEquals(15, mutant.location.segment.endInclusive.column)
 
         assertEquals(
             """
@@ -68,8 +69,7 @@ class JavaMutantGeneratorTest {
                     }
                 }
             }
-            
-            """.trimIndent(), targetFile.readText()
+            """.trimIndent(), targetFile.readText().trim()
         )
 
         sourceFile.deleteOnExit()

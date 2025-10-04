@@ -3,15 +3,15 @@ package io.strykermutator.jvm.core
 import io.strykermutator.jvm.runner.MutantCoverageReport
 import io.strykermutator.jvm.runner.MutationTestPlan
 import io.strykermutator.jvm.runner.MutationTestReport
-import io.strykermutator.jvm.runner.MutationTestRunner
+import io.strykermutator.jvm.runner.Stryker
 import io.strykermutator.jvm.runner.SourceRoot
 import io.strykermutator.jvm.runner.TestExecutionResult
 
-public class DefaultMutationTestRunner(
+internal class DefaultStryker(
     private val instrumenter: Instrumenter,
     private val executionPlanner: ExecutionPlanner,
     private val reporter: Reporter
-) : MutationTestRunner {
+) : Stryker {
     override fun instrumentSources(
         sourceRoot: SourceRoot,
         target: SourceRoot
