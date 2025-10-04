@@ -14,7 +14,9 @@ public class DefaultInstrumenter(private val mutantGenerators: Set<MutantGenerat
         sourceRoot: SourceRoot,
         target: SourceRoot
     ) {
-        sourceRoot.file.walkTopDown().associate { file ->
+        sourceRoot.file.walkTopDown()
+            .filter { it.isFile }
+            .associate { file ->
             val relativePath = file.relativeTo(sourceRoot.file).path
             val targetPath = File(target.file, relativePath)
 
