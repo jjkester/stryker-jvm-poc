@@ -2,7 +2,6 @@ package io.strykermutator.jvm.language
 
 import io.strykermutator.jvm.common.Mutant
 import io.strykermutator.jvm.common.MutatableFile
-import kotlinx.coroutines.flow.Flow
 
 /**
  * A transformer analyzes a source file, [generates][io.strykermutator.jvm.language.operator.MutationOperator] and
@@ -17,8 +16,8 @@ public interface Transformer {
      * Transforms the source file to the target file by mutating the code.
      *
      * @param file source file to mutate and target file to write to.
-     * @param idGenerator generator for unique mutant ids.
+     * @param configuration configuration of the mutation process.
      * @return set of generated and placed mutants.
      */
-    public fun transform(file: MutatableFile, idGenerator: MutantIdGenerator): Set<Mutant>
+    public fun transform(file: MutatableFile, configuration: MutationConfiguration): Set<Mutant>
 }

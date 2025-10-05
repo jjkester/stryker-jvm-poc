@@ -1,11 +1,7 @@
 package io.strykermutator.jvm
 
-import io.strykermutator.jvm.core.DefaultInstrumenter
-import io.strykermutator.jvm.core.DefaultReporter
-import io.strykermutator.jvm.core.NaiveExecutionPlanner
 import io.strykermutator.jvm.common.StringCompanionMethodRef
-import io.strykermutator.jvm.core.StrykerFactory
-import io.strykermutator.jvm.language.java.JavaLanguagePlugin
+import io.strykermutator.jvm.core.*
 import io.strykermutator.jvm.runner.DefaultMutantCoverageReport
 import io.strykermutator.jvm.runner.DefaultSourceRoot
 import java.io.File
@@ -13,9 +9,10 @@ import java.io.File
 public class JavaMutationTestRunner {
 
     public fun run(sourcePath: String) {
-        val generators = setOf(JavaLanguagePlugin(StringCompanionMethodRef("io.strykermutator.jvm.companion.StrykerCompanion", "mutantActive")))
+        val companionMethodRef =
+            StringCompanionMethodRef("io.strykermutator.jvm.companion.StrykerCompanion", "mutantActive")
         val testRunner = StrykerFactory {
-            instrumenter = DefaultInstrumenter(generators)
+            instrumenter = DefaultInstrumenter(LanguagePlugins.load())
             executionPlanner = NaiveExecutionPlanner()
             reporter = DefaultReporter()
         }
@@ -27,7 +24,7 @@ public class JavaMutationTestRunner {
         }
         val target = DefaultSourceRoot(targetDir)
 
-        testRunner.instrumentSources(sourceRoot, target)
+        testRunner.instrumentSources(sourceRoot, target, companionMethodRef)
 
         val testPlan = testRunner.planExecution(DefaultMutantCoverageReport(mapOf()))
 

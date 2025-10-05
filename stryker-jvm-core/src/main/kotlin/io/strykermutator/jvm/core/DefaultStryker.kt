@@ -1,11 +1,9 @@
 package io.strykermutator.jvm.core
 
-import io.strykermutator.jvm.runner.MutantCoverageReport
-import io.strykermutator.jvm.runner.MutationTestPlan
-import io.strykermutator.jvm.runner.MutationTestReport
-import io.strykermutator.jvm.runner.Stryker
-import io.strykermutator.jvm.runner.SourceRoot
-import io.strykermutator.jvm.runner.TestExecutionResult
+import io.strykermutator.jvm.common.CompanionMethodRef
+import io.strykermutator.jvm.language.DefaultMutationConfiguration
+import io.strykermutator.jvm.language.MutantIdGenerator
+import io.strykermutator.jvm.runner.*
 
 internal class DefaultStryker(
     private val instrumenter: Instrumenter,
@@ -14,9 +12,11 @@ internal class DefaultStryker(
 ) : Stryker {
     override fun instrumentSources(
         sourceRoot: SourceRoot,
-        target: SourceRoot
+        target: SourceRoot,
+        companionMethodRef: CompanionMethodRef
     ) {
-        instrumenter.instrument(sourceRoot, target)
+        val configuration = DefaultMutationConfiguration(companionMethodRef, MutantIdGenerator.sequential())
+        instrumenter.instrument(sourceRoot, target, configuration)
     }
 
     override fun planExecution(mutantCoverageReport: MutantCoverageReport): MutationTestPlan =

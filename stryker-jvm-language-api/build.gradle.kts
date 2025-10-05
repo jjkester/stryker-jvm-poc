@@ -5,5 +5,5 @@ plugins {
 dependencies {
     api(project(":stryker-jvm-common-api"))
 
-    implementation(libs.kotlinx.coroutines.core)
+    compileOnly(libs.kotlinx.coroutines.core)
 }

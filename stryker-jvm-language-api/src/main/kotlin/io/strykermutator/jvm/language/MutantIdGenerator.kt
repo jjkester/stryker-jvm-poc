@@ -13,19 +13,20 @@ public interface MutantIdGenerator {
      * Creates a new mutant identifier and returns it as reference.
      */
     public fun create(): MutantRef
+
+    public companion object {
+
+        /**
+         * Creates a new sequential mutant identifier generator using numbers, starting with 0.
+         */
+        @JvmStatic
+        public fun sequential(): MutantIdGenerator = SequentialMutantIdGenerator()
+    }
 }
 
-/**
- * Mutant identifier generator using sequentially incrementing numbers, starting with 0.
- *
- * This implementation is thread-safe.
- */
-public class SequentialMutantIdGenerator : MutantIdGenerator {
+internal class SequentialMutantIdGenerator : MutantIdGenerator {
 
     private val nextId = AtomicInteger(0)
 
-    /**
-     * Creates a new mutant identifier and returns it as reference.
-     */
     override fun create(): MutantRef = DefaultMutantRef(nextId.getAndIncrement().toString())
 }

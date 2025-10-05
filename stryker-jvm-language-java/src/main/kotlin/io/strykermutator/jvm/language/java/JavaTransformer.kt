@@ -3,26 +3,24 @@ package io.strykermutator.jvm.language.java
 import com.github.javaparser.StaticJavaParser
 import com.github.javaparser.ast.Node
 import com.github.javaparser.ast.expr.Expression
-import io.strykermutator.jvm.common.CompanionMethodRef
 import io.strykermutator.jvm.common.Mutant
 import io.strykermutator.jvm.common.MutatableFile
-import io.strykermutator.jvm.language.MutantIdGenerator
+import io.strykermutator.jvm.language.MutationConfiguration
 import io.strykermutator.jvm.language.Transformer
 import io.strykermutator.jvm.language.java.operator.JavaMutationOperator
 import io.strykermutator.jvm.language.java.placer.ExpressionMutantPlacer
 
 public class JavaTransformer(
     private val operators: Collection<JavaMutationOperator>,
-    private val expressionMutantPlacer: ExpressionMutantPlacer,
-    private val companionMethodRef: CompanionMethodRef
+    private val expressionMutantPlacer: ExpressionMutantPlacer
 ) : Transformer {
 
     override fun transform(
         file: MutatableFile,
-        idGenerator: MutantIdGenerator
+        configuration: MutationConfiguration
     ): Set<Mutant> {
         val mutants = mutableMapOf<Node, MutableMap<Mutant, Node>>()
-        val visitor = AstVisitor(file, operators, idGenerator) { node, mutant, replacement ->
+        val visitor = AstVisitor(file, operators, configuration.mutantIdGenerator) { node, mutant, replacement ->
             mutants.getOrPut(node) { mutableMapOf() }[mutant] = replacement
         }
 
@@ -31,7 +29,11 @@ public class JavaTransformer(
 
         mutants.forEach { (node, replacements) ->
             when (node) {
-                is Expression -> expressionMutantPlacer.place(node, replacements.checkNodeTypes(), companionMethodRef)
+                is Expression -> expressionMutantPlacer.place(
+                    node,
+                    replacements.checkNodeTypes(),
+                    configuration.companionMethodRef
+                )
             }
         }
         if (!file.mutated.parentFile.exists()) {

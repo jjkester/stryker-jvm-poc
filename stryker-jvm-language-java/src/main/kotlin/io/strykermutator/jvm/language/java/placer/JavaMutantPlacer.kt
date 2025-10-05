@@ -7,7 +7,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr
 import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.expr.StringLiteralExpr
 import io.strykermutator.jvm.common.CompanionMethodRef
-import io.strykermutator.jvm.common.Mutant
 import io.strykermutator.jvm.common.MutantRef
 import io.strykermutator.jvm.language.placer.MutantPlacer
 

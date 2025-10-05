@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":stryker-jvm-companion"))
-    implementation(project(":stryker-jvm-integration-api"))
+    compileOnly(project(":stryker-jvm-companion"))
+    api(project(":stryker-jvm-integration-api"))
     implementation(project(":stryker-jvm-language-api"))
 }

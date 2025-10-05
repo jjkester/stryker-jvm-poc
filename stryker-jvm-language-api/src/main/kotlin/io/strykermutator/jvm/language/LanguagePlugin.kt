@@ -18,13 +18,20 @@ public interface LanguagePlugin {
 
     /**
      * Determines whether a mutatable file is supported by this plugin.
+     *
+     * @param file file to be checked support from this language plugin for.
+     * @returns whether this language plugin supports the provided [file].
      */
     public fun supports(file: MutatableFile): Boolean
 
     /**
      * Generates the relevant mutants for the source file, and places the mutants in the target file.
      *
-     * Mutants must have a unique id within the scope of this file and this mutant generator.
+     * @param file file to mutate.
+     * @param configuration configuration of the mutation process.
+     * @returns the set of placed mutants.
      */
-    public fun instrument(file: MutatableFile, mutantIdGenerator: MutantIdGenerator): Set<Mutant>
+    public fun instrument(file: MutatableFile, configuration: MutationConfiguration): Set<Mutant>
+
 }
+

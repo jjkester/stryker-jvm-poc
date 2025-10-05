@@ -1,5 +1,7 @@
 package io.strykermutator.jvm.runner
 
+import io.strykermutator.jvm.common.CompanionMethodRef
+
 /**
  * Stryker JVM mutation test runner.
  *
@@ -31,8 +33,9 @@ public interface Stryker {
      *
      * @param sourceRoot the root directory of the source files to read.
      * @param target the target directory for the instrumented sources.
+     * @param companionMethodRef the Stryker companion method to call for each mutant.
      */
-    public fun instrumentSources(sourceRoot: SourceRoot, target: SourceRoot)
+    public fun instrumentSources(sourceRoot: SourceRoot, target: SourceRoot, companionMethodRef: CompanionMethodRef)
 
     /**
      * Plans the execution of test cases with active mutants. The resulting mutation test plan [MutationTestPlan] can

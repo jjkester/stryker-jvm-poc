@@ -1,8 +1,9 @@
 package io.strykermutator.jvm.language.java
 
 import io.strykermutator.jvm.common.DefaultMutatableFile
-import io.strykermutator.jvm.language.SequentialMutantIdGenerator
 import io.strykermutator.jvm.common.StringCompanionMethodRef
+import io.strykermutator.jvm.language.DefaultMutationConfiguration
+import io.strykermutator.jvm.language.MutantIdGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -34,15 +35,18 @@ class JavaMutantGeneratorTest {
         val targetFile = File.createTempFile("HelloWorld", ".java")
         sourceFile.writeText(fileContent)
 
-        val mutantGenerator = JavaLanguagePlugin(
-            StringCompanionMethodRef(
-                "io.strykermutator.jvm.companion.StrykerCompanion",
-                "mutantActive"
-            )
-        )
+        val mutantGenerator = JavaLanguagePlugin()
 
         //Act
-        val mutants = mutantGenerator.instrument(DefaultMutatableFile(sourceFile, targetFile), SequentialMutantIdGenerator())
+        val mutants = mutantGenerator.instrument(
+            DefaultMutatableFile(sourceFile, targetFile),
+            DefaultMutationConfiguration(
+                StringCompanionMethodRef(
+                    "io.strykermutator.jvm.companion.StrykerCompanion",
+                    "mutantActive"
+                ), MutantIdGenerator.sequential()
+            )
+        )
 
         println(mutants)
 
