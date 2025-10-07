@@ -8,6 +8,9 @@ public interface Mutant {
     /** Unique reference to the mutant. */
     public val ref: MutantRef
 
+    /** File in which the mutant is located. */
+    public val file: MutatableFile
+
     /** Location of the original code in the source file that is replaced by this mutant. */
     public val location: LocationSegment
 
@@ -22,6 +25,7 @@ public interface Mutant {
  * Default implementation of a mutant.
  *
  * @property ref unique reference to the mutant.
+ * @property file file in which the mutant is located.
  * @property location location of the original code in the source file that is replaced by this mutant.
  * @property operator name of the mutation operator that introduced the mutant.
  * @property replacement string representation of the mutant code that replaced the original code.
@@ -29,6 +33,7 @@ public interface Mutant {
  */
 public data class DefaultMutant(
     override val ref: MutantRef,
+    override val file: MutatableFile,
     override val location: LocationSegment,
     override val operator: String,
     override val replacement: String

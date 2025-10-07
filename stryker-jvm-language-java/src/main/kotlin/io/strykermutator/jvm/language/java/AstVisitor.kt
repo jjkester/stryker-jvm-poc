@@ -22,6 +22,7 @@ internal class AstVisitor(
                     node,
                     DefaultMutant(
                         mutantIdGenerator.create(),
+                        file,
                         node.positionIn(file),
                         operator.name,
                         replacement.toString()

@@ -24,13 +24,19 @@ public class JavaMutationTestRunner {
         }
         val target = DefaultSourceRoot(targetDir)
 
-        testRunner.instrumentSources(sourceRoot, target, companionMethodRef)
+        val instrumentationResult = testRunner.instrumentSources(sourceRoot, target, companionMethodRef)
 
-        val testPlan = testRunner.planExecution(DefaultMutantCoverageReport(mapOf()))
+        val mutantCoverageReport = DefaultMutantCoverageReport(mapOf())
+
+        val testPlan = testRunner.planExecution(mutantCoverageReport)
 
         println("Mutants planned for execution: ${testPlan.testExecutions.flatMap { it.activeMutants }}")
 
-        val report = testRunner.compileReport(emptyList())
+        val report = testRunner.compileReport(
+            mutants = instrumentationResult.mutants,
+            mutantCoverageReport = mutantCoverageReport,
+            testExecutionResults = emptyList()
+        )
 
         println("Report: $report")
     }

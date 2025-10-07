@@ -1,11 +1,10 @@
 package io.strykermutator.jvm.runner
 
 import io.strykermutator.jvm.common.CompanionMethodRef
+import io.strykermutator.jvm.common.Mutant
 
 /**
- * Stryker JVM mutation test runner.
- *
- * TODO: Probably needs a different name. It is not a runner, it provides some steps of a process.
+ * Stryker entry points for mutation testing runners.
  *
  * The mutation test runner is responsible for inserting mutations in the sources, planning the execution of tests,
  * and processing the results.
@@ -34,8 +33,9 @@ public interface Stryker {
      * @param sourceRoot the root directory of the source files to read.
      * @param target the target directory for the instrumented sources.
      * @param companionMethodRef the Stryker companion method to call for each mutant.
+     * @return the results of instrumenting the sources.
      */
-    public fun instrumentSources(sourceRoot: SourceRoot, target: SourceRoot, companionMethodRef: CompanionMethodRef)
+    public fun instrumentSources(sourceRoot: SourceRoot, target: SourceRoot, companionMethodRef: CompanionMethodRef): InstrumentationResult
 
     /**
      * Plans the execution of test cases with active mutants. The resulting mutation test plan [MutationTestPlan] can
@@ -52,8 +52,14 @@ public interface Stryker {
     /**
      * Compiles the results from executing a mutation test plan [MutationTestPlan] into a mutation test report.
      *
+     * @param mutants the mutants that were instrumented.
+     * @param mutantCoverageReport the test coverage of each mutant.
      * @param testExecutionResults the results of executing the mutation test plan.
      * @return the mutation test report.
      */
-    public fun compileReport(testExecutionResults: Collection<TestExecutionResult>): MutationTestReport
+    public fun compileReport(
+        mutants: Collection<Mutant>,
+        mutantCoverageReport: MutantCoverageReport,
+        testExecutionResults: Collection<TestExecutionResult>
+    ): MutationTestReport
 }
