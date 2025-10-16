@@ -22,4 +22,6 @@ public interface TestCaseRef {
  *
  * @property name the unique identifier of the test case.
  */
-public data class DefaultTestCaseRef(val name: String)
+public data class DefaultTestCaseRef(val className: String, val testCaseName: String) : TestCaseRef {
+    override val name: String = "$className#$testCaseName"
+}

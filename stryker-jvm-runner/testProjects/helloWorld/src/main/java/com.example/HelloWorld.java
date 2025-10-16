@@ -10,4 +10,8 @@ public class HelloWorld {
         return true || false;
     }
 
+    public boolean world() {
+        return false;
+    }
+
 }
