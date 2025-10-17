@@ -31,27 +31,14 @@ public class JavaMutationTestRunner {
         }
 
         val targetDir = File("stryker-jvm-runner/build/stryker-mutated-sources")
-        if (!targetDir.exists()) {
-            targetDir.mkdirs()
-        } else {
+        if (targetDir.exists()) {
             targetDir.deleteRecursively()
-            targetDir.mkdirs()
         }
+        targetDir.mkdirs()
+
         val target = DefaultSourceRoot(targetDir)
 
-
-        //Copy the full source root to a target directory, so we can instrument it there
-        // Copy the full source root to the target directory by recursively copying all files and directories
-//        sourceRoot.file.walkTopDown().forEach { file ->
-//            val targetFile = File(target.file, file.relativeTo(sourceRoot.file).path)
-//            if (file.isDirectory) {
-//                targetFile.mkdirs()
-//            } else {
-//                file.copyTo(targetFile, overwrite = true)
-//            }
-//        }
-
-        //Copy pom
+        //Copy sources
         sourceRoot.file.copyRecursively(targetDir, overwrite = true)
         // Add companion dependency to copied pom.xml
         addCompanionDependencyToPom(File(targetDir, "pom.xml"))
@@ -120,11 +107,8 @@ public class JavaMutationTestRunner {
         return runBlocking {
             val deferred = async(Dispatchers.IO) {
                 try {
-                    println("collecting")
                     val client = serverSocket.accept() // will throw after 5s if no connection
-                    println("collecting 2")
                     val input = client.getInputStream().bufferedReader()
-                    println("collecting 3")
                     val result = mutableSetOf<String>()
                     input.forEachLine { line ->
                         if (line.isNotBlank()) result.add(line)
@@ -135,10 +119,10 @@ public class JavaMutationTestRunner {
                 } catch (e: java.net.SocketTimeoutException) {
                     println("Socket accept timed out, no coverage data received.")
                     try { serverSocket.close() } catch (_: Exception) {}
-                    emptySet<String>()
+                    emptySet()
                 } catch (e: Exception) {
                     try { serverSocket.close() } catch (_: Exception) {}
-                    emptySet<String>()
+                    emptySet()
                 }
             }
 
