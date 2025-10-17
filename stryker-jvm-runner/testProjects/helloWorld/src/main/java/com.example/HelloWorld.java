@@ -11,7 +11,7 @@ public class HelloWorld {
     }
 
     public boolean world() {
-        return false;
+        return false && true;
     }
 
 }

@@ -3,6 +3,9 @@ package io.strykermutator.jvm.language.java
 import com.github.javaparser.StaticJavaParser
 import com.github.javaparser.ast.Node
 import com.github.javaparser.ast.expr.Expression
+import com.github.javaparser.ast.visitor.ObjectIdentityEqualsVisitor
+import com.github.javaparser.ast.visitor.ObjectIdentityHashCodeVisitor
+import com.github.javaparser.utils.VisitorMap
 import io.strykermutator.jvm.common.Mutant
 import io.strykermutator.jvm.common.MutatableFile
 import io.strykermutator.jvm.language.MutationConfiguration
@@ -19,7 +22,7 @@ public class JavaTransformer(
         file: MutatableFile,
         configuration: MutationConfiguration
     ): Set<Mutant> {
-        val mutants = mutableMapOf<Node, MutableMap<Mutant, Node>>()
+        val mutants = VisitorMap<Node, MutableMap<Mutant, Node>>(ObjectIdentityHashCodeVisitor(), ObjectIdentityEqualsVisitor())
         val visitor = AstVisitor(file, operators, configuration.mutantIdGenerator) { node, mutant, replacement ->
             mutants.getOrPut(node) { mutableMapOf() }[mutant] = replacement
         }
@@ -48,4 +51,6 @@ public class JavaTransformer(
     private inline fun <reified T : Node> Map<Mutant, Node>.checkNodeTypes(): Map<Mutant, T> = apply {
         check(values.all { it is T })
     } as Map<Mutant, T>
+
+
 }

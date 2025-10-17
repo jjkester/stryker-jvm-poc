@@ -114,23 +114,32 @@ public class JavaMutationTestRunner {
             }?.toSet() ?: emptySet()
 
     private fun openServerAndRunTest(testCase: TestCaseRef): Set<String> {
-        // Open a server socket to listen for coverage data
         val serverSocket = java.net.ServerSocket(0)
+        serverSocket.soTimeout = 5000 // 5 seconds timeout for accept()
         val port = serverSocket.localPort
         return runBlocking {
             val deferred = async(Dispatchers.IO) {
-                println("collecting")
-                val client = serverSocket.accept()
-                println("collecting 2")
-                val input = client.getInputStream().bufferedReader()
-                println("collecting 3")
-                val result = mutableSetOf<String>()
-                input.forEachLine { line ->
-                    if (line.isNotBlank()) result.add(line)
+                try {
+                    println("collecting")
+                    val client = serverSocket.accept() // will throw after 5s if no connection
+                    println("collecting 2")
+                    val input = client.getInputStream().bufferedReader()
+                    println("collecting 3")
+                    val result = mutableSetOf<String>()
+                    input.forEachLine { line ->
+                        if (line.isNotBlank()) result.add(line)
+                    }
+                    client.close()
+                    serverSocket.close()
+                    result
+                } catch (e: java.net.SocketTimeoutException) {
+                    println("Socket accept timed out, no coverage data received.")
+                    try { serverSocket.close() } catch (_: Exception) {}
+                    emptySet<String>()
+                } catch (e: Exception) {
+                    try { serverSocket.close() } catch (_: Exception) {}
+                    emptySet<String>()
                 }
-                client.close()
-                serverSocket.close()
-                result
             }
 
             val pomFile = File("C:\\Users\\JelleH\\IdeaProjects\\stryker-jvm-poc\\stryker-jvm-runner\\build\\stryker-mutated-sources\\pom.xml")
@@ -158,7 +167,7 @@ public class JavaMutationTestRunner {
             } else {
                 println("Maven build failed")
             }
-
+            // Await the deferred job, which will return emptySet if timed out or errored
             deferred.await()
         }
     }
