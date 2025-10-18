@@ -7,11 +7,11 @@ public class HelloWorld {
     }
 
     public boolean hello() {
-        return true || false;
+        return true | false;
     }
 
     public boolean world() {
-        return false && true;
+        return false & true;
     }
 
 }

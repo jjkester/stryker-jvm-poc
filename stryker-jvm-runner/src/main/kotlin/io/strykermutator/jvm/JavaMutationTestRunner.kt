@@ -7,19 +7,19 @@ import io.strykermutator.jvm.runner.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.yield
-import org.apache.maven.shared.invoker.DefaultInvocationRequest
-import org.apache.maven.shared.invoker.DefaultInvoker
-import org.apache.maven.shared.invoker.InvocationRequest
-import org.apache.maven.shared.invoker.InvocationResult
-import org.apache.maven.shared.invoker.Invoker
-import java.io.BufferedWriter
+import org.apache.maven.shared.invoker.*
 import java.io.File
-import java.io.FileWriter
 import javax.xml.parsers.DocumentBuilderFactory
 
 
 public class JavaMutationTestRunner {
+
+    private fun getMavenExecutable(): File {
+        val mavenHome = System.getenv("MAVEN_HOME")
+            ?: throw IllegalStateException("MAVEN_HOME environment variable is not set.")
+        val mavenCmd = if (System.getProperty("os.name").lowercase().contains("win")) "mvn.cmd" else "mvn"
+        return File(mavenHome, "bin/$mavenCmd")
+    }
 
     public fun run(sourceRoot: SourceRoot) {
         val companionMethodRef =
@@ -49,7 +49,7 @@ public class JavaMutationTestRunner {
             companionMethodRef
         )
 
-        val mutantCoverageReport = DefaultMutantCoverageReport(mapOf())
+        val mutantCoverageReport = dryRun(DefaultSourceRoot(targetDir))
 
         val testPlan = testRunner.planExecution(mutantCoverageReport)
 
@@ -64,11 +64,12 @@ public class JavaMutationTestRunner {
         println("Report: $report")
     }
 
-    public fun dryRun(testSourcePath: SourceRoot): MutantCoverageReport {
+    public fun dryRun(sourcePath: SourceRoot): MutantCoverageReport {
+        val mavenExecutable = getMavenExecutable()
         val process = ProcessBuilder(
-            "C:\\Users\\JelleH\\M2_HOME\\bin\\mvn.cmd", "test"
+            mavenExecutable.absolutePath, "test"
         )
-            .directory(File("C:\\Users\\JelleH\\IdeaProjects\\stryker-jvm-poc\\stryker-jvm-runner\\testProjects\\helloWorld"))
+            .directory(sourcePath.file)
             .inheritIO()
             .start()
         val exitCode = process.waitFor()
@@ -76,13 +77,13 @@ public class JavaMutationTestRunner {
             throw RuntimeException("Dry-run Maven test run failed with exit code $exitCode")
         }
 
-        val reportDir = File("stryker-jvm-runner/testProjects/helloWorld/target/surefire-reports")
+        val reportDir = File(sourcePath.file, "target/surefire-reports")
         val testCases = parseExecutedTestsFromXml(reportDir).also { executedTests ->
             println("Executed tests: $executedTests")
         }
 
         //now, run each test individually to see which classes/methods they cover
-        val coverage = testCases.associateWith { openServerAndRunTest(it).map { DefaultMutantRef(it)}.toSet() }
+        val coverage = testCases.associateWith { openServerAndRunTest(it, sourcePath).map { DefaultMutantRef(it)}.toSet() }
 
         return DefaultMutantCoverageReport(coverage)
     }
@@ -100,10 +101,11 @@ public class JavaMutationTestRunner {
                 }
             }?.toSet() ?: emptySet()
 
-    private fun openServerAndRunTest(testCase: TestCaseRef): Set<String> {
+    private fun openServerAndRunTest(testCase: TestCaseRef, sourceRoot: SourceRoot): Set<String> {
         val serverSocket = java.net.ServerSocket(0)
         serverSocket.soTimeout = 5000 // 5 seconds timeout for accept()
         val port = serverSocket.localPort
+        println("Opened server socket on port $port for test ${testCase.name}")
         return runBlocking {
             val deferred = async(Dispatchers.IO) {
                 try {
@@ -126,7 +128,7 @@ public class JavaMutationTestRunner {
                 }
             }
 
-            val pomFile = File("C:\\Users\\JelleH\\IdeaProjects\\stryker-jvm-poc\\stryker-jvm-runner\\build\\stryker-mutated-sources\\pom.xml")
+            val pomFile = File(sourceRoot.file, "pom.xml")
             val request: InvocationRequest = DefaultInvocationRequest()
             request.pomFile = pomFile
             request.baseDirectory = pomFile.parentFile
@@ -135,13 +137,12 @@ public class JavaMutationTestRunner {
             request.addArgs(mutableListOf<String?>(
                 "test",
                 testArg,
-                "-Dstryker.coverage.port=$port",
-                "-Dsurefire.additionalClasspath=C:\\Users\\JelleH\\IdeaProjects\\stryker-jvm-poc\\stryker-jvm-companion\\build\\classes"
+                "-Dstryker.coverage.port=$port"
             ))
             request.setOutputHandler { line -> println(line) }
             request.setErrorHandler { line -> System.err.println(line) }
             val invoker: Invoker = DefaultInvoker()
-            invoker.mavenExecutable = File("C:\\Users\\JelleH\\M2_HOME\\bin\\mvn.cmd")
+            invoker.mavenExecutable = getMavenExecutable()
 
             println("MVN BUILD STARTING")
             val result: InvocationResult = invoker.execute(request)
@@ -188,10 +189,7 @@ public class JavaMutationTestRunner {
 }
 
 public fun main() {
-    val testSourceRoot = DefaultSourceRoot(File("stryker-jvm-runner/testProjects/helloWorld/src/test/java"));
     val sourceRoot = DefaultSourceRoot(File("stryker-jvm-runner/testProjects/helloWorld"))
     val runner = JavaMutationTestRunner()
     runner.run(sourceRoot)
-    val result = runner.dryRun(testSourceRoot)
-    println("Dry run result: $result")
 }

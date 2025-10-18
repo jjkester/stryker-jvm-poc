@@ -3,6 +3,9 @@ package com.example;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class HelloWorldTest {
 
     @Test
@@ -14,7 +17,7 @@ class HelloWorldTest {
         var result = helloWorld.hello();
 
         //Assert
-        assert result == true;
+        assertTrue(result);
     }
 
     @Nested
@@ -28,7 +31,7 @@ class HelloWorldTest {
             var result = helloWorld.world();
 
             //Assert
-            assert result == false;
+            assertFalse(result);
         }
     }
 

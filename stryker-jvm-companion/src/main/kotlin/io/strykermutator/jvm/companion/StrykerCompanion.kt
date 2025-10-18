@@ -27,10 +27,10 @@ public class StrykerCompanion {
 
         @JvmStatic
         public fun mutantActive(id: String): Boolean {
-            Thread.currentThread().stackTrace.forEach { println(it) }
-            print("mutantActive called with id: $id\n")
             sendCoverage(id)
-            return System.getProperty(PREFIX + id) != null
+            val result = System.getProperty(PREFIX + id) != null
+            print("mutantActive called with id: $id, is active: $result\n")
+            return result
         }
 
         private fun sendCoverage(id: String) {
@@ -40,6 +40,7 @@ public class StrykerCompanion {
             val p = port ?: return
             try {
                 if (socket == null || socket!!.isClosed) {
+                    print("Connecting to coverage socket on localhost:$p\n")
                     socket = java.net.Socket("localhost", p)
                     outputStream = socket!!.getOutputStream()
                 }
