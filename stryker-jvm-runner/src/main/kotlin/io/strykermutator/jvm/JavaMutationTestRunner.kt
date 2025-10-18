@@ -66,15 +66,15 @@ public class JavaMutationTestRunner {
 
     public fun dryRun(sourcePath: SourceRoot): MutantCoverageReport {
         val mavenExecutable = getMavenExecutable()
-        val process = ProcessBuilder(
-            mavenExecutable.absolutePath, "test"
-        )
-            .directory(sourcePath.file)
-            .inheritIO()
-            .start()
-        val exitCode = process.waitFor()
-        if (exitCode != 0) {
-            throw RuntimeException("Dry-run Maven test run failed with exit code $exitCode")
+       val request: InvocationRequest = DefaultInvocationRequest()
+        request.pomFile = File(sourcePath.file, "pom.xml")
+        request.baseDirectory = sourcePath.file
+        request.addArgs(listOf("test"))
+        val invoker: Invoker = DefaultInvoker()
+        invoker.mavenExecutable = mavenExecutable
+        val result: InvocationResult = invoker.execute(request)
+        if (result.exitCode != 0) {
+            throw RuntimeException("Dry-run Maven test run failed with exit code ${result.exitCode}")
         }
 
         val reportDir = File(sourcePath.file, "target/surefire-reports")
@@ -150,7 +150,7 @@ public class JavaMutationTestRunner {
             if (result.exitCode == 0) {
                 println("Maven build succeeded")
             } else {
-                println("Maven build failed")
+                throw RuntimeException("Maven test run for test ${testCase.name} failed with exit code ${result.exitCode}")
             }
             // Await the deferred job, which will return emptySet if timed out or errored
             deferred.await()
