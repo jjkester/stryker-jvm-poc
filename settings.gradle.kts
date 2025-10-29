@@ -11,6 +11,7 @@ dependencyResolutionManagement {
 }
 
 // Included subprojects (in alphabetical order).
+include(":stryker-jvm-cli")
 include(":stryker-jvm-common-api")
 include(":stryker-jvm-companion")
 include(":stryker-jvm-core")
