@@ -1,5 +1,5 @@
 plugins {
-    buildsrc.convention.`kotlin-jvm`
+    buildsrc.convention.`kotlin-jvm-library`
     application
 }
 

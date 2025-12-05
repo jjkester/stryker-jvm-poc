@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+    id 'io.strykermutator.jvm'
+}
+
+dependencies {
+    // Latest available version in local repository
+    strykerJvmPlugin 'io.stryker-mutator.jvm:stryker-jvm-cli:+'
+}

@@ -1,10 +1,14 @@
-// Shared build logic for Kotlin JVM projects.
+/*
+ * Shared build logic for Kotlin JVM libraries.
+ */
+
 package buildsrc.convention
 
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     kotlin("jvm")
+    `maven-publish`
 }
 
 kotlin {
@@ -31,5 +35,13 @@ tasks.withType<Test>().configureEach {
             TestLogEvent.PASSED,
             TestLogEvent.SKIPPED
         )
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("library") {
+            from(components["java"])
+        }
     }
 }

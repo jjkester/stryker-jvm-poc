@@ -1,0 +1,18 @@
+dependencyResolutionManagement {
+    repositories {
+        // Local repository directory
+        mavenLocal {
+            url System.getenv("LOCAL_REPOSITORY_DIR")
+            content {
+                // Only resolve monorepo artifacts from the local repo
+                includeGroup 'io.stryker-mutator.jvm'
+            }
+        }
+        mavenCentral {
+            content {
+                // Do not try to get published versions of monorepo artifacts
+                excludeGroup 'io.stryker-mutator.jvm'
+            }
+        }
+    }
+}
