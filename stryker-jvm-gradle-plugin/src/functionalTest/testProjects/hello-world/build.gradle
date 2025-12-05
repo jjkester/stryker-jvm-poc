@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
-    // Latest available version in local repository
+    // Latest available versions in local repository
     strykerJvmPlugin 'io.stryker-mutator.jvm:stryker-jvm-cli:+'
+    strykerJvmPlugin 'io.stryker-mutator.jvm:stryker-jvm-language-java:+'
 }

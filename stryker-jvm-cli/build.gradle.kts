@@ -6,7 +6,6 @@ plugins {
 dependencies {
     implementation(project(":stryker-jvm-core"))
     implementation(libs.clikt)
-    runtimeOnly(project(":stryker-jvm-language-java")) // TODO: Should not be here...
 }
 
 application {
