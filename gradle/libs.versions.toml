@@ -1,16 +1,28 @@
 [versions]
-kotlin = "2.1.10"
+# General versions
+kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
-clikt = "5.0.1"
-junit = "6.0.1"
+clikt = "5.1.0"
+
+# Test-only versions
+junit = "6.0.3"
 assertk = "0.28.1"
 
+# Java-only versions
+java-javaparser = "3.28.1"
+
 [libraries]
+# General dependencies
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-debug = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
+
+# Test-only dependencies
 test-junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
-test-junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit"}
+test-junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit" }
 test-assertk = { group = "com.willowtreeapps.assertk", name = "assertk", version.ref = "assertk" }
+
+# Java-only dependencies
+java-javaparser = { group = "com.github.javaparser", name = "javaparser-symbol-solver-core", version.ref = "java-javaparser" }
