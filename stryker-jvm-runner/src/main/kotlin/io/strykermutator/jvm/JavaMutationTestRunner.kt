@@ -74,6 +74,7 @@ public class JavaMutationTestRunner {
         invoker.mavenExecutable = mavenExecutable
         val result: InvocationResult = invoker.execute(request)
         if (result.exitCode != 0) {
+
             throw RuntimeException("Dry-run Maven test run failed with exit code ${result.exitCode}")
         }
 
@@ -171,11 +172,11 @@ public class JavaMutationTestRunner {
         }
         val dependency = doc.createElement("dependency")
         val groupId = doc.createElement("groupId")
-        groupId.textContent = "io.strykermutator"
+        groupId.textContent = "io.stryker-mutator.jvm"
         val artifactId = doc.createElement("artifactId")
         artifactId.textContent = "stryker-jvm-companion"
         val version = doc.createElement("version")
-        version.textContent = "0.1.0-SNAPSHOT" // <-- Replace with actual version if needed
+        version.textContent = "0.0.1-SNAPSHOT" // <-- Replace with actual version if needed
         dependency.appendChild(groupId)
         dependency.appendChild(artifactId)
         dependency.appendChild(version)
