@@ -1,4 +1,4 @@
-package io.strykermutator.jvm.gradle.task
+package io.strykermutator.jvm.gradle.tasks
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property

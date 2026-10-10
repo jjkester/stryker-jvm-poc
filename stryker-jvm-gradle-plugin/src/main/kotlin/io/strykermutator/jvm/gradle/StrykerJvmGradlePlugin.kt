@@ -1,8 +1,8 @@
 package io.strykermutator.jvm.gradle
 
-import io.strykermutator.jvm.gradle.task.InitialRunTask
-import io.strykermutator.jvm.gradle.task.MutateTask
-import io.strykermutator.jvm.gradle.task.MutationTestTask
+import io.strykermutator.jvm.gradle.tasks.InitialRunTask
+import io.strykermutator.jvm.gradle.tasks.MutateTask
+import io.strykermutator.jvm.gradle.tasks.MutationTestTask
 import io.strykermutator.jvm.gradle.util.configureFrom
 import io.strykermutator.jvm.gradle.util.extendSourceSetConfigurations
 import org.gradle.api.Plugin

@@ -1,18 +1,17 @@
-package io.strykermutator.jvm.gradle.task
+package io.strykermutator.jvm.gradle.tasks
 
 import io.strykermutator.jvm.gradle.MutateSpec
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSet
 
 /**
  * Task to introduce mutants to sources.
  */
-internal abstract class MutateTask : JavaExec(), MutateSpec {
+internal abstract class MutateTask : CliTask(), MutateSpec {
 
     /**
      * Sources to mutate.
@@ -26,12 +25,7 @@ internal abstract class MutateTask : JavaExec(), MutateSpec {
     @get:OutputDirectory
     abstract val target: DirectoryProperty
 
-    init {
-        // Sets the default main class if none is specified
-        mainClass.convention(MAIN_CLASS)
-    }
-
-    override fun exec() {
+    override fun beforeExec() {
         sources.finalizeValue()
         target.finalizeValue()
 
@@ -47,13 +41,9 @@ internal abstract class MutateTask : JavaExec(), MutateSpec {
                 target.get()
             )
         )
-
-        super.exec()
     }
 
     internal companion object {
-
-        const val MAIN_CLASS = "io.strykermutator.jvm.cli.StrykerJvmCli"
         const val MUTATE_COMMAND = "mutate"
         const val TASK_NAME_VERB = "mutate"
 

@@ -1,4 +1,4 @@
-package io.strykermutator.jvm.gradle.task
+package io.strykermutator.jvm.gradle.tasks
 
 import io.strykermutator.jvm.gradle.MutateSpec
 import org.gradle.api.DefaultTask
