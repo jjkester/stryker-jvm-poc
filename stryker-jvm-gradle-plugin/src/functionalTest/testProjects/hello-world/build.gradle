@@ -4,7 +4,16 @@ plugins {
 }
 
 dependencies {
+    // JUnit
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.3'
+
     // Latest available versions in local repository
     strykerJvmPlugin 'io.stryker-mutator.jvm:stryker-jvm-cli:+'
     strykerJvmPlugin 'io.stryker-mutator.jvm:stryker-jvm-language-java:+'
+    strykerJvmCompanion 'io.stryker-mutator.jvm:stryker-jvm-companion:+'
+}
+
+tasks.named("test").configure {
+    useJUnitPlatform()
 }

@@ -1,17 +1,22 @@
 package io.strykermutator.jvm.gradle
 
-import org.gradle.api.NamedDomainObjectProvider
+import io.strykermutator.jvm.gradle.task.InitialRunTask
+import io.strykermutator.jvm.gradle.task.MutateTask
+import io.strykermutator.jvm.gradle.task.MutationTestTask
+import io.strykermutator.jvm.gradle.util.configureFrom
+import io.strykermutator.jvm.gradle.util.extendSourceSetConfigurations
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.create
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
@@ -27,18 +32,27 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
             // Create configuration for plugin classpath
             val pluginConfiguration = createStrykerJvmPluginConfiguration()
 
+            // Create configuration for companion classpath
+            val companionConfiguration = createStrykerJvmCompanionConfiguration()
+
             // Register mutation test task for main source set
-            val mainSourceSet = extensions.getByType<SourceSetContainer>().named(SourceSet.MAIN_SOURCE_SET_NAME)
+            val mainSourceSet = sourceSets.named(SourceSet.MAIN_SOURCE_SET_NAME)
             tasks.register<MutationTestTask>(MutationTestTask.name(mainSourceSet.get())) {
                 sourceSet.set(mainSourceSet)
+                testSourceSet.set(sourceSets.named(SourceSet.TEST_SOURCE_SET_NAME))
+                testTask.set(tasks.named("test", Test::class.java))
             }
 
             // Register tasks
-            project.registerTasks(extension, pluginConfiguration)
+            project.registerTasks(extension, pluginConfiguration, companionConfiguration)
         }
     }
 
-    private fun Project.registerTasks(extension: StrykerJvmExtension, pluginConfiguration: Provider<Configuration>) {
+    private fun Project.registerTasks(
+        extension: StrykerJvmExtension,
+        pluginConfiguration: Provider<Configuration>,
+        companionConfiguration: Provider<Configuration>
+    ) {
         registerLifecycleTask()
 
         // Register subtasks for each user-configured mutation test task
@@ -46,6 +60,7 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
             tasks.withType<MutationTestTask>().forEach { mutationTestTask ->
                 // Set default plugin configuration
                 mutationTestTask.pluginConfiguration.convention(pluginConfiguration)
+                mutationTestTask.companionConfiguration.convention(companionConfiguration)
 
                 registerSubTasks(mutationTestTask)
             }
@@ -54,29 +69,78 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
 
     private fun Project.registerSubTasks(mutationTestTask: MutationTestTask) {
         // Finalize properties of mutation test task
-        val sourceSet = mutationTestTask.sourceSet.apply { finalizeValue() }.get()
-        val pluginConfiguration = mutationTestTask.pluginConfiguration.apply { finalizeValue() }.get()
+        val sourceSet = mutationTestTask.sourceSet.apply { finalizeValue() }
+        val testSourceSet = mutationTestTask.testSourceSet.apply { finalizeValue() }
+        val testTask = mutationTestTask.testTask.apply { finalizeValue() }
+        val pluginConfiguration = mutationTestTask.pluginConfiguration.apply { finalizeValue() }
+        val companionConfiguration = mutationTestTask.companionConfiguration.apply { finalizeValue() }
+
+        // Determine target directory
+        val targetDir = this.layout.strykerBuildDirectory("mutated-sources", sourceSet.get().name)
 
         // Register mutate subtasks
-        val mutateTask = registerMutateTask(sourceSet, pluginConfiguration, mutationTestTask)
+        val mutateTask = registerMutateTask(
+            sourceSet,
+            pluginConfiguration,
+            mutationTestTask,
+            targetDir
+        )
+
+        // Register mutated source set
+        val mutatedSourceSet = registerMutatedSourceSet(sourceSet, targetDir, mutateTask, companionConfiguration)
+
+        // Register execute task
+        val initialRunTask = registerInitialRunTask(sourceSet, mutatedSourceSet, testSourceSet, testTask, companionConfiguration)
+        initialRunTask.configure { it.dependsOn(mutateTask) }
 
         // Set task dependencies (mutation test task depends on subtasks)
-        mutationTestTask.dependsOn(mutateTask)
+        mutationTestTask.dependsOn(mutateTask, initialRunTask)
     }
 
     private fun Project.registerMutateTask(
-        sourceSet: SourceSet,
-        pluginConfiguration: Configuration,
-        mutateSpec: MutateSpec
-    ): MutateTask {
-        val targetDir = layout.strykerBuildDirectory("mutated-sources", sourceSet.name)
+        sourceSet: Provider<SourceSet>,
+        pluginConfiguration: Provider<Configuration>,
+        mutateSpec: MutateSpec,
+        targetDir: Provider<Directory>
+    ): TaskProvider<MutateTask> = tasks.register<MutateTask>(MutateTask.name(sourceSet.get())) {
+        sources.set(sourceSet.map { it.allSource })
+        target.set(targetDir)
+        classpath = project.files(pluginConfiguration)
+        mutateSpec.copyTo(this)
+    }
 
-        return tasks.create<MutateTask>(MutateTask.name(sourceSet)) {
-            sources.set(sourceSet.allSource)
-            target.set(targetDir)
-            classpath = pluginConfiguration
-            mutateSpec.copyTo(this)
+    private fun Project.registerMutatedSourceSet(
+        originalMainSourceSet: Provider<SourceSet>,
+        targetDir: Provider<Directory>,
+        mutateTask: TaskProvider<MutateTask>,
+        companionConfiguration: Provider<Configuration>
+    ): Provider<SourceSet> = sourceSets.register("${originalMainSourceSet.get().name}MutationTest") { sourceSet ->
+        sourceSet.apply {
+            // Copy properties from original source set
+            configureFrom(originalMainSourceSet.get())
+            extendSourceSetConfigurations(configurations, this, originalMainSourceSet.get())
+
+            // Add companion to compilation
+            compileClasspath += project.files(companionConfiguration)
+
+            // Point to mutated sources and set task dependency
+            java.setSrcDirs(listOf(targetDir))
+            tasks.findByName(compileJavaTaskName)?.dependsOn(mutateTask)
         }
+    }
+
+    private fun Project.registerInitialRunTask(
+        originalSourceSet: Provider<SourceSet>,
+        mutatedSourceSet: Provider<SourceSet>,
+        testSourceSet: Provider<SourceSet>,
+        testTask: Property<Test>,
+        companionConfiguration: Provider<Configuration>
+    ): TaskProvider<InitialRunTask> = tasks.register<InitialRunTask>(InitialRunTask.name(mutatedSourceSet.get())) {
+        configureFrom(testTask.get())
+        this.testSourceSet.set(testSourceSet)
+        this.originalSourceSet.set(originalSourceSet)
+        this.mutatedSourceSet.set(mutatedSourceSet)
+        this.companionClasspath.set(companionConfiguration)
     }
 
     private fun Project.registerLifecycleTask(): TaskProvider<Task> {
@@ -94,7 +158,7 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
             // Apply conventions (sensible defaults)
         }
 
-    private fun Project.createStrykerJvmPluginConfiguration(): NamedDomainObjectProvider<Configuration> =
+    private fun Project.createStrykerJvmPluginConfiguration(): Provider<Configuration> =
         configurations.register(PLUGIN_CONFIGURATION_NAME) { configuration ->
             configuration.apply {
                 isVisible = false
@@ -102,10 +166,19 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
             }
         }
 
+    private fun Project.createStrykerJvmCompanionConfiguration(): Provider<Configuration> =
+        configurations.register(COMPANION_CONFIGURATION_NAME) { configuration ->
+            configuration.apply {
+                isVisible = false
+                isCanBeConsumed = true
+            }
+        }
+
     private companion object {
 
         private const val EXTENSION_NAME = "strykerJvm"
         private const val PLUGIN_CONFIGURATION_NAME = "strykerJvmPlugin"
+        private const val COMPANION_CONFIGURATION_NAME = "strykerJvmCompanion"
         private const val LIFECYCLE_TASK_NAME = "mutationTest"
 
         private fun ProjectLayout.strykerBuildDirectory(name: String, vararg names: String): Provider<Directory> = names
@@ -118,3 +191,6 @@ public class StrykerJvmGradlePlugin : Plugin<Project> {
             }
     }
 }
+
+private val Project.sourceSets: SourceSetContainer
+    get() = extensions.getByType<SourceSetContainer>()

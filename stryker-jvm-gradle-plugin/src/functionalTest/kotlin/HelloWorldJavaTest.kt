@@ -1,9 +1,6 @@
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.exists
-import assertk.assertions.isDirectory
-import assertk.assertions.isNotNull
+import assertk.assertions.*
 import org.junit.jupiter.api.Test
 
 class HelloWorldJavaTest : ProjectTestBase("hello-world") {
@@ -12,7 +9,12 @@ class HelloWorldJavaTest : ProjectTestBase("hello-world") {
     fun testTasks() {
         assertThatGradleRun { withArguments("mutationTest") }
             .tasks()
-            .containsExactlyInAnyOrder(":mutationTest", ":mutationTestMain", ":mutateMain")
+            .containsAtLeast(
+                ":mutationTest",
+                ":mutationTestMain",
+                ":mutateMain",
+                ":initialRunMainMutationTest",
+            )
     }
 
     @Test
@@ -30,6 +32,26 @@ class HelloWorldJavaTest : ProjectTestBase("hello-world") {
             recursiveChildren()
                 .files()
                 .containsExactlyInAnyOrder(mutatedHelloWorldFile, mutatedNewClassFile)
+        }
+    }
+
+    @Test
+    fun testInitialRun() {
+        assertThatGradleRun { withArguments("initialRunMainMutationTest") }
+            .task(":initialRunMainMutationTest").isNotNull().outcome().isSuccessful()
+
+        val testReportDir = buildDir.resolve("test-results/initialRunMainMutationTest/")
+
+        assertThat(testReportDir).all {
+            exists()
+            isDirectory()
+            children()
+                .files()
+                .fileNames()
+                .containsExactlyInAnyOrder(
+                    "TEST-com.example.HelloWorldTest.xml",
+                    $$"TEST-com.example.HelloWorldTest$NestedHelloWorldTest.xml"
+                )
         }
     }
 
