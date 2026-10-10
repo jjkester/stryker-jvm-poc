@@ -12,15 +12,16 @@ class HelloWorldJavaTest : ProjectTestBase("hello-world") {
             .containsAtLeast(
                 ":mutationTest",
                 ":mutationTestMain",
-                ":mutateMain",
-                ":initialRunMainMutationTest",
+                ":mutateMutationTestMain",
+                ":initialRunMutationTestMain",
             )
     }
 
     @Test
     fun testMutate() {
-        assertThatGradleRun { withArguments("mutateMain") }
-            .task(":mutateMain").isNotNull().outcome().isSuccessful()
+        val taskName = "mutateMutationTestMain"
+        assertThatGradleRun { withArguments(taskName) }
+            .task(":$taskName").isNotNull().outcome().isSuccessful()
 
         val mutatedSourcesDir = buildDir.resolve("stryker/mutated-sources/main")
         val mutatedHelloWorldFile = mutatedSourcesDir.resolve("com/example/HelloWorld.java")
@@ -37,10 +38,12 @@ class HelloWorldJavaTest : ProjectTestBase("hello-world") {
 
     @Test
     fun testInitialRun() {
-        assertThatGradleRun { withArguments("initialRunMainMutationTest") }
-            .task(":initialRunMainMutationTest").isNotNull().outcome().isSuccessful()
+        val taskName = "initialRunMutationTestMain"
 
-        val testReportDir = buildDir.resolve("test-results/initialRunMainMutationTest/")
+        assertThatGradleRun { withArguments(taskName) }
+            .task(":$taskName").isNotNull().outcome().isSuccessful()
+
+        val testReportDir = buildDir.resolve("test-results/$taskName/")
 
         assertThat(testReportDir).all {
             exists()

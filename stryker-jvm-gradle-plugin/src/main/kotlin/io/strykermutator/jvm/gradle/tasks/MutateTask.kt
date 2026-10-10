@@ -1,12 +1,12 @@
 package io.strykermutator.jvm.gradle.tasks
 
 import io.strykermutator.jvm.gradle.MutateSpec
+import io.strykermutator.jvm.gradle.util.taskName
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.SourceSet
 
 /**
  * Task to introduce mutants to sources.
@@ -29,7 +29,6 @@ internal abstract class MutateTask : CliTask(), MutateSpec {
         sources.finalizeValue()
         target.finalizeValue()
 
-        // Run Stryker JVM CLI
         args(
             listOfNotNull(
                 MUTATE_COMMAND,
@@ -44,9 +43,10 @@ internal abstract class MutateTask : CliTask(), MutateSpec {
     }
 
     internal companion object {
-        const val MUTATE_COMMAND = "mutate"
-        const val TASK_NAME_VERB = "mutate"
 
-        fun name(sourceSet: SourceSet): String = sourceSet.getTaskName(TASK_NAME_VERB, null)
+        private const val MUTATE_COMMAND = "mutate"
+        private const val TASK_NAME_VERB = "mutate"
+
+        fun name(mutationTestName: String): String = taskName(TASK_NAME_VERB, mutationTestName)
     }
 }

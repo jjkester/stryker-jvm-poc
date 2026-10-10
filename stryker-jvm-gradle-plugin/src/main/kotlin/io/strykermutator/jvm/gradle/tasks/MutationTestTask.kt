@@ -1,6 +1,7 @@
 package io.strykermutator.jvm.gradle.tasks
 
 import io.strykermutator.jvm.gradle.MutateSpec
+import io.strykermutator.jvm.gradle.util.taskName
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.provider.Property
@@ -45,8 +46,8 @@ public abstract class MutationTestTask : DefaultTask(), MutateSpec {
 
     internal companion object {
 
-        const val TASK_NAME_VERB = "mutationTest"
+        private const val TASK_NAME_VERB = "mutationTest"
 
-        fun name(sourceSet: SourceSet): String = sourceSet.getTaskName(TASK_NAME_VERB, null)
+        fun name(mutationTestName: String): String = taskName(TASK_NAME_VERB, mutationTestName)
     }
 }

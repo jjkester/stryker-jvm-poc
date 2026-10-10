@@ -1,5 +1,6 @@
 package io.strykermutator.jvm.gradle.tasks
 
+import io.strykermutator.jvm.gradle.util.taskName
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
@@ -55,6 +56,6 @@ internal abstract class InitialRunTask : Test() {
 
         const val TASK_NAME_VERB = "initialRun"
 
-        fun name(mutatedSourceSet: SourceSet): String = mutatedSourceSet.getTaskName(TASK_NAME_VERB, null)
+        fun name(mutationTestName: String): String = taskName(TASK_NAME_VERB, mutationTestName)
     }
 }
