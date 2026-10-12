@@ -7,6 +7,7 @@ import io.strykermutator.jvm.runner.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.apache.maven.shared.invoker.*
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
@@ -61,7 +62,7 @@ public class JavaMutationTestRunner {
             testExecutionResults = emptyList()
         )
 
-        println("Report: $report")
+        println("Report: ${Json.encodeToString(report)}")
     }
 
     public fun dryRun(sourcePath: SourceRoot): MutantCoverageReport {
